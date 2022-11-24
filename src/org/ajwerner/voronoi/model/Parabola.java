@@ -1,4 +1,4 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.model;
 
 import edu.princeton.cs.introcs.StdDraw;
 
@@ -18,12 +18,8 @@ public class Parabola {
         min = (min > -2) ? min : -2;
         max = (max < 2) ? max : 2;
         for (double x = min; x < max; x += .001) {
-            double y = ((x-a)*(x-a) + (b*b) - (c*c)) / (2*(b-c));
+            double y = ((x - a) * (x - a) + (b * b) - (c * c)) / (2 * (b - c));
             StdDraw.point(x, y);
         }
-    }
-
-    public void draw() {
-        this.draw(0, 1);
     }
 }

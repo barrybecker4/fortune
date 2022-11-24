@@ -1,4 +1,4 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.model;
 
 /**
  * Created by ajwerner on 12/23/13.

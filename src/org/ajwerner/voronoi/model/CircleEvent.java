@@ -1,4 +1,4 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.model;
 
 import edu.princeton.cs.introcs.StdDraw;
 

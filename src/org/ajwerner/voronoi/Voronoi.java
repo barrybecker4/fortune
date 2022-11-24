@@ -1,98 +1,71 @@
 package org.ajwerner.voronoi;
 
-import edu.princeton.cs.introcs.StdDraw;
-import edu.princeton.cs.introcs.StdStats;
-import edu.princeton.cs.introcs.Stopwatch;
+import org.ajwerner.voronoi.model.Arc;
+import org.ajwerner.voronoi.model.ArcKey;
+import org.ajwerner.voronoi.model.ArcQuery;
+import org.ajwerner.voronoi.model.BreakPoint;
+import org.ajwerner.voronoi.model.CircleEvent;
+import org.ajwerner.voronoi.model.Event;
+import org.ajwerner.voronoi.model.Point;
+import org.ajwerner.voronoi.model.VoronoiEdge;
+import org.ajwerner.voronoi.ui.VoronoiPanel;
+import org.ajwerner.voronoi.ui.VoronoiRenderer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import static org.ajwerner.voronoi.ui.VoronoiRenderer.MAX_DIM;
+import static org.ajwerner.voronoi.ui.VoronoiRenderer.MIN_DIM;
 
 /**
  * Created by ajwerner on 12/23/13.
  */
 public class Voronoi {
-    public static final double MIN_DRAW_DIM = -5;
-    public static final double MAX_DRAW_DIM = 5;
-    // Ghetto but just for drawing stuff
-    private static final double MAX_DIM = 10;
-    private static final double MIN_DIM = -10;
+
     private double sweepLoc;
-    private final ArrayList<Point> sites;
-    private final ArrayList<VoronoiEdge> edgeList;
-    private HashSet<BreakPoint> breakPoints;
-    private TreeMap<ArcKey, CircleEvent> arcs;
-    private TreeSet<Event> events;
+    private final List<Point> points;
+    private final List<VoronoiEdge> edgeList;
+    private final Set<BreakPoint> breakPoints;
+    private final TreeMap<ArcKey, CircleEvent> arcs;
+    private final TreeSet<Event> events;
+
+    private final VoronoiRenderer renderer;
 
     public double getSweepLoc() {
         return sweepLoc;
     }
 
-    public static void main(String[] args) {
-        if (args.length > 0) {
-            int N = Integer.parseInt(args[0]);
-            ArrayList<Point> sites = new ArrayList<Point>();
-            Random rnd = new Random();
-            for (int i = 0; i < N; i++) {
-                sites.add(new Point(rnd.nextDouble(), rnd.nextDouble()));
-            }
-            StdDraw.setCanvasSize(1024, 1024);
-            StdDraw.setScale(-.1, 1.1);
-            Voronoi v = new Voronoi(sites, true);
-            v.show();
-        }
-        else {
-            int numTrials = 5;
-            System.out.println("         N:   \ttime (s)");
-            int[] Ns = {50000, 100000, 200000, 400000, 800000, 1600000, 3200000};
-            for (int n : Ns) {
-                double res[] = new double[numTrials];
-                for (int i = 0; i < numTrials; i++) {
-                    res[i] = randomTrial(n);
-                }
-                System.out.printf("%10d:\t%-5.6f +/- %f \n", n, StdStats.mean(res), StdStats.stddev(res)/Math.sqrt(numTrials));
-            }
-        }
+
+    public Voronoi(List<Point> points) {
+        this(points, false);
     }
 
-    private static double randomTrial(int N) {
-        Random rnd = new Random();
-        ArrayList<Point> sites = new ArrayList<Point>();
-        Stopwatch s = new Stopwatch();
-        double stop, start;
-        sites.clear();
-        for (int i = 0; i < N; i++) {
-            sites.add(new Point(rnd.nextDouble(), rnd.nextDouble()));
-        }
-        start = s.elapsedTime();
-        Voronoi v = new Voronoi(sites);
-        stop = s.elapsedTime();
-
-        return stop-start;
-    }
-
-    public Voronoi(ArrayList<Point> sites) {
-        this(sites, false);
-    }
-
-    public Voronoi(ArrayList<Point> sites, boolean animate) {
+    public Voronoi(List<Point> points, boolean animate) {
         // initialize data structures;
-        this.sites = sites;
-        edgeList = new ArrayList<VoronoiEdge>(sites.size());
-        events = new TreeSet<Event>();
-        breakPoints = new HashSet<BreakPoint>();
-        arcs = new TreeMap<ArcKey, CircleEvent>();
+        this.points = points;
+        edgeList = new ArrayList<>(points.size());
+        events = new TreeSet<>();
+        breakPoints = new HashSet<>();
+        arcs = new TreeMap<>();
+        renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT);
 
-        for (Point site : sites) {
+        for (Point site : points) {
             if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
                 throw new RuntimeException(String.format(
-                    "Invalid site in input, sites must be between %f and %f", MIN_DIM, MAX_DIM ));
+                        "Invalid site in input, sites must be between %f and %f", MIN_DIM, MAX_DIM ));
             events.add(new Event(site));
         }
         sweepLoc = MAX_DIM;
         do {
             Event cur = events.pollFirst();
             sweepLoc = cur.p.y;
-            if (animate) this.draw();
+            if (animate) renderer.draw(points, edgeList,breakPoints,arcs, sweepLoc);
             if (cur.getClass() == Event.class) {
                 handleSiteEvent(cur);
             }
@@ -106,6 +79,10 @@ public class Voronoi {
         for (BreakPoint bp : breakPoints) {
             bp.finish();
         }
+    }
+
+    public void show() {
+        renderer.show(points, edgeList);
     }
 
     private void handleSiteEvent(Event cur) {
@@ -266,39 +243,5 @@ public class Voronoi {
         }
     }
 
-    private void show() {
-        StdDraw.clear();
-        for (Point p : sites) {
-            p.draw(StdDraw.RED);
-        }
-        for (VoronoiEdge e : edgeList) {
-            if (e.p1 != null && e.p2 != null) {
-                double topY = (e.p1.y == Double.POSITIVE_INFINITY) ? MAX_DIM : e.p1.y; // HACK to draw from infinity
-                StdDraw.line(e.p1.x, topY, e.p2.x, e.p2.y);
-            }
-        }
-        StdDraw.show();
-    }
-
-    private void draw() {
-        StdDraw.clear();
-        for (Point p : sites) {
-            p.draw(StdDraw.RED);
-        }
-        for (BreakPoint bp : breakPoints) {
-            bp.draw();
-        }
-        for (ArcKey a : arcs.keySet()) {
-            ((Arc) a).draw();
-        }
-        for (VoronoiEdge e : edgeList) {
-            if (e.p1 != null && e.p2 != null) {
-                double topY = (e.p1.y == Double.POSITIVE_INFINITY) ? MAX_DIM : e.p1.y; // HACK to draw from infinity
-                StdDraw.line(e.p1.x, topY, e.p2.x, e.p2.y);
-            }
-        }
-        StdDraw.line(MIN_DIM, sweepLoc, MAX_DIM, sweepLoc);
-        StdDraw.show(1);
-    }
 }
 

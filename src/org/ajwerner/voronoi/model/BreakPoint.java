@@ -1,6 +1,7 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.model;
 
 import edu.princeton.cs.introcs.StdDraw;
+import org.ajwerner.voronoi.Voronoi;
 
 import java.awt.*;
 
@@ -9,9 +10,9 @@ import java.awt.*;
  */
 public class BreakPoint {
     private final Voronoi v;
-    protected final Point s1, s2;
-    private VoronoiEdge e;
-    private boolean isEdgeLeft;
+    public final Point s1, s2;
+    private final VoronoiEdge e;
+    private final boolean isEdgeLeft;
     public final Point edgeBegin;
 
     private double cacheSweepLoc;

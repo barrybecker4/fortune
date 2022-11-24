@@ -1,4 +1,7 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.model;
+
+import org.ajwerner.voronoi.Voronoi;
+import org.ajwerner.voronoi.ui.VoronoiRenderer;
 
 /**
  * Created by ajwerner on 12/28/13.
@@ -19,19 +22,19 @@ public class Arc extends ArcKey {
     }
 
     public Arc(Point site, Voronoi v) {
-        // Only for creating the first org.ajwerner.voronoi.Arc
+        // Only for creating the first org.ajwerner.voronoi.model.Arc
         this.v = v;
         this.left = null;
         this.right = null;
         this.site = site;
     }
 
-    protected Point getRight() {
+    public Point getRight() {
         if (right != null) return right.getPoint();
         return new Point(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
-    protected Point getLeft() {
+    public Point getLeft() {
         if (left != null) return left.getPoint();
         return new Point(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
@@ -41,8 +44,8 @@ public class Arc extends ArcKey {
         Point r = getRight();
 
         Parabola par = new Parabola(site, v.getSweepLoc());
-        double min = (l.x == Double.NEGATIVE_INFINITY) ? Voronoi.MIN_DRAW_DIM : l.x;
-        double max = (r.x == Double.POSITIVE_INFINITY) ? Voronoi.MAX_DRAW_DIM : r.x;
+        double min = (l.x == Double.NEGATIVE_INFINITY) ? VoronoiRenderer.MIN_DRAW_DIM : l.x;
+        double max = (r.x == Double.POSITIVE_INFINITY) ? VoronoiRenderer.MAX_DRAW_DIM : r.x;
         par.draw(min, max);
     }
 
