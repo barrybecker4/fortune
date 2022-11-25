@@ -1,4 +1,4 @@
-package org.ajwerner.voronoi;
+package org.ajwerner.voronoi.algorithm;
 
 import org.ajwerner.voronoi.model.Arc;
 import org.ajwerner.voronoi.model.ArcKey;
@@ -8,7 +8,6 @@ import org.ajwerner.voronoi.model.CircleEvent;
 import org.ajwerner.voronoi.model.Event;
 import org.ajwerner.voronoi.model.Point;
 import org.ajwerner.voronoi.model.VoronoiEdge;
-import org.ajwerner.voronoi.ui.VoronoiPanel;
 import org.ajwerner.voronoi.ui.VoronoiRenderer;
 
 import java.util.ArrayList;
@@ -34,26 +33,26 @@ public class Voronoi {
     private final Set<BreakPoint> breakPoints;
     private final TreeMap<ArcKey, CircleEvent> arcs;
     private final TreeSet<Event> events;
-
     private final VoronoiRenderer renderer;
+
 
     public double getSweepLoc() {
         return sweepLoc;
     }
 
 
-    public Voronoi(List<Point> points) {
-        this(points, false);
+    public Voronoi(List<Point> points, VoronoiRenderer renderer) {
+        this(points, renderer, false);
     }
 
-    public Voronoi(List<Point> points, boolean animate) {
+    public Voronoi(List<Point> points, VoronoiRenderer renderer, boolean animate) {
         // initialize data structures;
         this.points = points;
         edgeList = new ArrayList<>(points.size());
         events = new TreeSet<>();
         breakPoints = new HashSet<>();
         arcs = new TreeMap<>();
-        renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT, false);
+        this.renderer = renderer;
 
         for (Point site : points) {
             if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
@@ -206,7 +205,7 @@ public class Voronoi {
         VoronoiEdge e = new VoronoiEdge(arcLeft.right.s1, arcRight.left.s2);
         edgeList.add(e);
 
-        // Here we're trying to figure out if the org.ajwerner.voronoi.Voronoi vertex
+        // Here we're trying to figure out if the org.ajwerner.voronoi.algorithm.Voronoi vertex
         // we've found is the left
         // or right point of the new edge.
         // If the edges being traces out by these two arcs take a right turn then we

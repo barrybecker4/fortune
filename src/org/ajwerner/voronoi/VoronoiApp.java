@@ -1,10 +1,12 @@
 package org.ajwerner.voronoi;
 
+import org.ajwerner.voronoi.algorithm.PointGenerator;
+import org.ajwerner.voronoi.algorithm.Voronoi;
 import org.ajwerner.voronoi.model.Point;
+import org.ajwerner.voronoi.ui.VoronoiPanel;
+import org.ajwerner.voronoi.ui.VoronoiRenderer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 /**
@@ -13,25 +15,15 @@ import java.util.Random;
 public class VoronoiApp {
 
     public static void main(String[] args) {
-        int N = 100;
+        int N = 1000;
         if (args.length > 0) {
             N = Integer.parseInt(args[0]);
         }
 
-        List<Point> points = createPoints(N);
-
-        Voronoi v = new Voronoi(points, true);
+        List<Point> points = new PointGenerator().generatePoints(N);
+        VoronoiRenderer renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT);
+        Voronoi v = new org.ajwerner.voronoi.algorithm.Voronoi(points, renderer,true);
         v.show();
-    }
-
-    private static List<Point> createPoints(int N) {
-        List<Point> points = new ArrayList<org.ajwerner.voronoi.model.Point>();
-        Random rnd = new Random();
-        for (int i = 0; i < N; i++) {
-            points.add(new Point(rnd.nextDouble(), rnd.nextDouble()));
-        }
-
-        return points;
     }
 
 }

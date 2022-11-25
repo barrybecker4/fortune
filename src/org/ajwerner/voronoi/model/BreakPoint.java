@@ -1,6 +1,6 @@
 package org.ajwerner.voronoi.model;
 
-import org.ajwerner.voronoi.Voronoi;
+import org.ajwerner.voronoi.algorithm.Voronoi;
 
 /**
  * Created by ajwerner on 12/28/13.
