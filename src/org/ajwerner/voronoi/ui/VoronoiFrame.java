@@ -6,7 +6,7 @@ import java.awt.BorderLayout;
 public class VoronoiFrame extends JFrame {
 
     public VoronoiFrame(int numPoints) {
-        super("Voronoi Visualization");
+        super("VoronoiProcessor Visualization");
 
         VoronoiPanel panel = new VoronoiPanel(numPoints);
 

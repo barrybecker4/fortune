@@ -4,7 +4,7 @@ import com.barrybecker4.ui.renderers.OfflineGraphics;
 import org.ajwerner.voronoi.model.Arc;
 import org.ajwerner.voronoi.model.ArcKey;
 import org.ajwerner.voronoi.model.BreakPoint;
-import org.ajwerner.voronoi.model.CircleEvent;
+import org.ajwerner.voronoi.model.event.CircleEvent;
 import org.ajwerner.voronoi.model.Parabola;
 import org.ajwerner.voronoi.model.Point;
 import org.ajwerner.voronoi.model.VoronoiEdge;

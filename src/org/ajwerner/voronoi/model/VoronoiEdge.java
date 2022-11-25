@@ -16,8 +16,8 @@ public class VoronoiEdge {
         if (isVertical) m = b = 0;
         else {
             m = -1.0 / ((site1.y - site2.y) / (site1.x - site2.x));
-            org.ajwerner.voronoi.model.Point midpoint = Point.midpoint(site1, site2);
-            b = midpoint.y - m*midpoint.x;
+            Point midpoint = Point.midpoint(site1, site2);
+            b = midpoint.y - m * midpoint.x;
         }
     }
 
@@ -38,6 +38,6 @@ public class VoronoiEdge {
             x = (that.b - this.b) / (this.m - that.m);
             y = m * x + b;
         }
-        return new org.ajwerner.voronoi.model.Point(x, y);
+        return new Point(x, y);
     }
 }

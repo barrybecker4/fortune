@@ -4,8 +4,8 @@ import org.ajwerner.voronoi.model.Arc;
 import org.ajwerner.voronoi.model.ArcKey;
 import org.ajwerner.voronoi.model.ArcQuery;
 import org.ajwerner.voronoi.model.BreakPoint;
-import org.ajwerner.voronoi.model.CircleEvent;
-import org.ajwerner.voronoi.model.Event;
+import org.ajwerner.voronoi.model.event.CircleEvent;
+import org.ajwerner.voronoi.model.event.SiteEvent;
 import org.ajwerner.voronoi.model.Point;
 import org.ajwerner.voronoi.model.VoronoiEdge;
 import org.ajwerner.voronoi.ui.VoronoiRenderer;
@@ -25,20 +25,20 @@ import static org.ajwerner.voronoi.ui.VoronoiRenderer.MIN_DIM;
 /**
  * Created by ajwerner on 12/23/13.
  */
-public class Voronoi {
+public class VoronoiProcessor {
 
     private double sweepLoc;
     private final List<VoronoiEdge> edgeList;
     private final Set<BreakPoint> breakPoints;
     private final TreeMap<ArcKey, CircleEvent> arcs;
-    private final TreeSet<Event> events;
+    private final TreeSet<SiteEvent> events;
 
-    public Voronoi(List<Point> points) {
+    public VoronoiProcessor(List<Point> points) {
         this(points, null);
     }
 
-    public Voronoi(List<Point> points, VoronoiRenderer renderer) {
-        // initialize data structures;
+    public VoronoiProcessor(List<Point> points, VoronoiRenderer renderer) {
+
         edgeList = new ArrayList<>(points.size());
         events = new TreeSet<>();
         breakPoints = new HashSet<>();
@@ -52,15 +52,9 @@ public class Voronoi {
                 renderer.draw(points, edgeList, breakPoints, arcs, sweepLoc);
             }
 
-            Event cur = events.pollFirst();
+            SiteEvent cur = events.pollFirst();
             sweepLoc = cur.p.y;
-            if (cur.getClass() == Event.class) {
-                handleSiteEvent(cur);
-            }
-            else {
-                CircleEvent ce = (CircleEvent) cur;
-                handleCircleEvent(ce);
-            }
+            cur.handleEvent(this);
         } while ((events.size() > 0));
 
         this.sweepLoc = MIN_DIM; // hack to draw negative infinite points
@@ -82,26 +76,26 @@ public class Voronoi {
             if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
                 throw new RuntimeException(String.format(
                         "Invalid site in input, sites must be between %f and %f", MIN_DIM, MAX_DIM ));
-            events.add(new Event(site));
+            events.add(new SiteEvent(site));
         }
     }
 
-    private void handleSiteEvent(Event cur) {
+    public void handleSiteEvent(Point point) {
         // Deal with first point case
         if (arcs.size() == 0) {
-            arcs.put(new Arc(cur.p, this), null);
+            arcs.put(new Arc(point, this), null);
             return;
         }
 
         // Find the arc above the site
-        Map.Entry<ArcKey, CircleEvent> arcEntryAbove = arcs.floorEntry(new ArcQuery(cur.p));
+        Map.Entry<ArcKey, CircleEvent> arcEntryAbove = arcs.floorEntry(new ArcQuery(point));
         Arc arcAbove = (Arc) arcEntryAbove.getKey();
 
         // Deal with the degenerate case where the first two points are at the same y value
-        if (arcs.size() == 0 && arcAbove.site.y == cur.p.y) {
-            VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, cur.p);
-            newEdge.p1 = new Point((cur.p.x + arcAbove.site.x) / 2, Double.POSITIVE_INFINITY);
-            BreakPoint newBreak = new BreakPoint(arcAbove.site, cur.p, newEdge, false, this);
+        if (arcs.size() == 0 && arcAbove.site.y == point.y) {
+            VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, point);
+            newEdge.p1 = new Point((point.x + arcAbove.site.x) / 2, Double.POSITIVE_INFINITY);
+            BreakPoint newBreak = new BreakPoint(arcAbove.site, point, newEdge, false, this);
             breakPoints.add(newBreak);
             edgeList.add(newEdge);
             Arc arcLeft = new Arc(null, newBreak, this);
@@ -120,10 +114,10 @@ public class Voronoi {
 
         BreakPoint breakL = arcAbove.left;
         BreakPoint breakR = arcAbove.right;
-        VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, cur.p);
+        VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, point);
         edgeList.add(newEdge);
-        BreakPoint newBreakL = new BreakPoint(arcAbove.site, cur.p, newEdge, true, this);
-        BreakPoint newBreakR = new BreakPoint(cur.p, arcAbove.site, newEdge, false, this);
+        BreakPoint newBreakL = new BreakPoint(arcAbove.site, point, newEdge, true, this);
+        BreakPoint newBreakR = new BreakPoint(point, arcAbove.site, newEdge, false, this);
         breakPoints.add(newBreakL);
         breakPoints.add(newBreakR);
 
@@ -136,91 +130,61 @@ public class Voronoi {
         arcs.put(center, null);
         arcs.put(arcRight, null);
 
+        // Perhaps we can add point param here?
+        // then use map<point, edges? later for drawing the cell edges around a site
         checkForCircleEvent(arcLeft);
         checkForCircleEvent(arcRight);
     }
 
-    private void handleCircleEvent(CircleEvent ce) {
-        arcs.remove(ce.arc);
-        ce.arc.left.finish(ce.vert);
-        ce.arc.right.finish(ce.vert);
-        breakPoints.remove(ce.arc.left);
-        breakPoints.remove(ce.arc.right);
+    public void handleCircleEvent(Point point, Arc arc, Point vert) {
+        arcs.remove(arc);
+        arc.left.finish(vert);
+        arc.right.finish(vert);
+        breakPoints.remove(arc.left);
+        breakPoints.remove(arc.right);
 
-        Entry<ArcKey, CircleEvent> entryRight = arcs.higherEntry(ce.arc);
-        Entry<ArcKey, CircleEvent> entryLeft = arcs.lowerEntry(ce.arc);
+        Entry<ArcKey, CircleEvent> entryRight = arcs.higherEntry(arc);
+        Entry<ArcKey, CircleEvent> entryLeft = arcs.lowerEntry(arc);
         Arc arcRight = null;
         Arc arcLeft = null;
 
-        Point ceArcLeft = ce.arc.getLeft();
-        boolean cocircularJunction = ce.arc.getRight().equals(ceArcLeft);
+        Point ceArcLeft = arc.getLeft();
+        boolean cocircularJunction = arc.getRight().equals(ceArcLeft);
 
         if (entryRight != null) {
             arcRight = (Arc) entryRight.getKey();
             while (cocircularJunction && arcRight.getRight().equals(ceArcLeft)) {
-                arcs.remove(arcRight);
-                arcRight.left.finish(ce.vert);
-                arcRight.right.finish(ce.vert);
-                breakPoints.remove(arcRight.left);
-                breakPoints.remove(arcRight.right);
-
-                CircleEvent falseCe = entryRight.getValue();
-                if (falseCe != null) {
-                    events.remove(falseCe);
-                }
-
-                entryRight = arcs.higherEntry(arcRight);
+                entryRight = calcEntry(arcRight, entryRight, vert);
                 arcRight = (Arc) entryRight.getKey();
             }
-
-            CircleEvent falseCe = entryRight.getValue();
-            if (falseCe != null) {
-                events.remove(falseCe);
-                arcs.put(arcRight, null);
-            }
+            removeEvent(entryRight, arcRight);
         }
         if (entryLeft != null) {
             arcLeft = (Arc) entryLeft.getKey();
             while (cocircularJunction && arcLeft.getLeft().equals(ceArcLeft)) {
-                arcs.remove(arcLeft);
-                arcLeft.left.finish(ce.vert);
-                arcLeft.right.finish(ce.vert);
-                breakPoints.remove(arcLeft.left);
-                breakPoints.remove(arcLeft.right);
-
-                CircleEvent falseCe = entryLeft.getValue();
-                if (falseCe != null) {
-                    events.remove(falseCe);
-                }
-
-                entryLeft = arcs.lowerEntry(arcLeft);
+                entryLeft = calcEntry(arcLeft, entryLeft, vert);
                 arcLeft = (Arc) entryLeft.getKey();
             }
-
-            CircleEvent falseCe = entryLeft.getValue();
-            if (falseCe != null) {
-                events.remove(falseCe);
-                arcs.put(arcLeft, null);
-            }
+            removeEvent(entryLeft, arcLeft);
         }
 
         VoronoiEdge e = new VoronoiEdge(arcLeft.right.s1, arcRight.left.s2);
         edgeList.add(e);
 
-        // Here we're trying to figure out if the org.ajwerner.voronoi.algorithm.Voronoi vertex
+        // Here we're trying to figure out if the org.ajwerner.voronoi.algorithm.VoronoiProcessor vertex
         // we've found is the left
         // or right point of the new edge.
         // If the edges being traces out by these two arcs take a right turn then we
         // know
         // that the vertex is going to be above the current point
-        boolean turnsLeft = Point.ccw(arcLeft.right.edgeBegin, ce.p, arcRight.left.edgeBegin) == 1;
+        boolean turnsLeft = Point.ccw(arcLeft.right.edgeBegin, point, arcRight.left.edgeBegin) == 1;
         // So if it turns left, we know the next vertex will be below this vertex
         // so if it's below and the slow is negative then this vertex is the left point
         boolean isLeftPoint = (turnsLeft) ? (e.m < 0) : (e.m > 0);
         if (isLeftPoint) {
-            e.p1 = ce.vert;
+            e.p1 = vert;
         } else {
-            e.p2 = ce.vert;
+            e.p2 = vert;
         }
 
         BreakPoint newBP = new BreakPoint(arcLeft.right.s1, arcRight.left.s2, e, !isLeftPoint, this);
@@ -231,6 +195,29 @@ public class Voronoi {
 
         checkForCircleEvent(arcLeft);
         checkForCircleEvent(arcRight);
+    }
+
+    private void removeEvent(Entry<ArcKey, CircleEvent> entry, Arc arc) {
+        CircleEvent falseCe = entry.getValue();
+        if (falseCe != null) {
+            events.remove(falseCe);
+            arcs.put(arc, null);
+        }
+    }
+
+    private Entry<ArcKey, CircleEvent> calcEntry(Arc arc, Entry<ArcKey, CircleEvent> entry, Point vert) {
+        arcs.remove(arc);
+        arc.left.finish(vert);
+        arc.right.finish(vert);
+        breakPoints.remove(arc.left);
+        breakPoints.remove(arc.right);
+
+        CircleEvent falseCe = entry.getValue();
+        if (falseCe != null) {
+            events.remove(falseCe);
+        }
+
+        return arcs.higherEntry(arc);
     }
 
     private void checkForCircleEvent(Arc a) {

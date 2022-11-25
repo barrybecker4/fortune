@@ -1,12 +1,12 @@
 package org.ajwerner.voronoi.model;
 
-import org.ajwerner.voronoi.algorithm.Voronoi;
+import org.ajwerner.voronoi.algorithm.VoronoiProcessor;
 
 /**
  * Created by ajwerner on 12/28/13.
  */
 public class BreakPoint {
-    private final Voronoi v;
+    private final VoronoiProcessor v;
     public final Point s1, s2;
     private final VoronoiEdge e;
     public final boolean isEdgeLeft;
@@ -15,7 +15,7 @@ public class BreakPoint {
     private double cacheSweepLoc;
     private Point cachePoint;
 
-    public BreakPoint(Point left, Point right, VoronoiEdge e, boolean isEdgeLeft, Voronoi v) {
+    public BreakPoint(Point left, Point right, VoronoiEdge e, boolean isEdgeLeft, VoronoiProcessor v) {
         this.v = v;
         this.s1 = left;
         this.s2 = right;
