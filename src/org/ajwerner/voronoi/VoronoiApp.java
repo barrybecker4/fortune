@@ -15,7 +15,7 @@ import java.util.List;
 public class VoronoiApp {
 
     public static void main(String[] args) {
-        int N = 1000;
+        int N = 200;
         if (args.length > 0) {
             N = Integer.parseInt(args[0]);
         }

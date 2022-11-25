@@ -32,7 +32,7 @@ public class VoronoiRenderer {
     private final int width;
     private final int height;
 
-    private final OfflineGraphics offlineGraphics;
+    private OfflineGraphics offlineGraphics;
     private final JPanel panel;
 
 
@@ -52,7 +52,7 @@ public class VoronoiRenderer {
     }
 
     public void show(List<Point> sites, List<VoronoiEdge> edgeList) {
-        StdDraw.clear();
+        clear();
         setColor(Color.RED);
         for (Point p : sites) {
             fillCircle(p, 0.01);
@@ -106,7 +106,6 @@ public class VoronoiRenderer {
 
     public void show() {
         if (offlineGraphics != null) {
-            //panel.invalidate();
             panel.repaint();
         } else {
             StdDraw.show();
@@ -114,7 +113,6 @@ public class VoronoiRenderer {
     }
     public void show(int value) {
         if (offlineGraphics != null) {
-            //panel.invalidate();
             panel.repaint();
             try {
                 Thread.sleep(1);
