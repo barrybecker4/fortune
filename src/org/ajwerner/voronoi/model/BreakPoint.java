@@ -1,9 +1,6 @@
 package org.ajwerner.voronoi.model;
 
-import edu.princeton.cs.introcs.StdDraw;
 import org.ajwerner.voronoi.Voronoi;
-
-import java.awt.*;
 
 /**
  * Created by ajwerner on 12/28/13.
@@ -12,7 +9,7 @@ public class BreakPoint {
     private final Voronoi v;
     public final Point s1, s2;
     private final VoronoiEdge e;
-    private final boolean isEdgeLeft;
+    public final boolean isEdgeLeft;
     public final Point edgeBegin;
 
     private double cacheSweepLoc;
@@ -29,20 +26,6 @@ public class BreakPoint {
 
     private static double sq(double d) {
         return d * d;
-    }
-
-    public void draw() {
-        Point p = this.getPoint();
-        p.draw(Color.BLUE);
-        StdDraw.setPenColor(Color.BLUE);
-        StdDraw.line(edgeBegin.x, edgeBegin.y, p.x, p.y);
-        StdDraw.setPenColor();
-        if (isEdgeLeft && e.p2 != null) {
-            StdDraw.line(edgeBegin.x, edgeBegin.y, e.p2.x, e.p2.y);
-        }
-        else if (!isEdgeLeft && e.p1 != null) {
-            StdDraw.line(edgeBegin.x, edgeBegin.y, e.p1.x, e.p1.y);
-        }
     }
 
     public void finish(Point vert) {
@@ -82,19 +65,19 @@ public class BreakPoint {
             // This method works by intersecting the line of the edge with the parabola of the higher point
             // I'm not sure why I chose the higher point, either should work
             double px = (s1.y > s2.y) ? s1.x : s2.x;
-            double py = (s1.y > s2.y) ? s1.y : s2.y;
+            double py = Math.max(s1.y, s2.y);
             double m = e.m;
             double b = e.b;
 
-            double d = 2*(py - l);
+            double d = 2 * (py - l);
 
             // Straight up quadratic formula
             double A = 1;
-            double B = -2*px - d*m;
-            double C = sq(px) + sq(py) - sq(l) - d*b;
+            double B = -2 * px - d * m;
+            double C = sq(px) + sq(py) - sq(l) - d * b;
             int sign = (s1.y > s2.y) ? -1 : 1;
             double det = sq(B) - 4 * A * C;
-            // When rounding leads to a very very small negative determinant, fix it
+            // When rounding leads to a very small negative determinant, fix it
             if (det <= 0) {
                 x = -B / (2 * A);
             }

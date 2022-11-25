@@ -53,7 +53,7 @@ public class Voronoi {
         events = new TreeSet<>();
         breakPoints = new HashSet<>();
         arcs = new TreeMap<>();
-        renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT);
+        renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT, false);
 
         for (Point site : points) {
             if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
@@ -65,7 +65,7 @@ public class Voronoi {
         do {
             Event cur = events.pollFirst();
             sweepLoc = cur.p.y;
-            if (animate) renderer.draw(points, edgeList,breakPoints,arcs, sweepLoc);
+            if (animate) renderer.draw(points, edgeList, breakPoints, arcs, sweepLoc);
             if (cur.getClass() == Event.class) {
                 handleSiteEvent(cur);
             }
@@ -99,10 +99,10 @@ public class Voronoi {
         // Deal with the degenerate case where the first two points are at the same y value
         if (arcs.size() == 0 && arcAbove.site.y == cur.p.y) {
             VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, cur.p);
-            newEdge.p1 = new Point((cur.p.x + arcAbove.site.x)/2, Double.POSITIVE_INFINITY);
+            newEdge.p1 = new Point((cur.p.x + arcAbove.site.x) / 2, Double.POSITIVE_INFINITY);
             BreakPoint newBreak = new BreakPoint(arcAbove.site, cur.p, newEdge, false, this);
             breakPoints.add(newBreak);
-            this.edgeList.add(newEdge);
+            edgeList.add(newEdge);
             Arc arcLeft = new Arc(null, newBreak, this);
             Arc arcRight = new Arc(newBreak, null, this);
             arcs.remove(arcAbove);
@@ -120,7 +120,7 @@ public class Voronoi {
         BreakPoint breakL = arcAbove.left;
         BreakPoint breakR = arcAbove.right;
         VoronoiEdge newEdge = new VoronoiEdge(arcAbove.site, cur.p);
-        this.edgeList.add(newEdge);
+        edgeList.add(newEdge);
         BreakPoint newBreakL = new BreakPoint(arcAbove.site, cur.p, newEdge, true, this);
         BreakPoint newBreakR = new BreakPoint(cur.p, arcAbove.site, newEdge, false, this);
         breakPoints.add(newBreakL);

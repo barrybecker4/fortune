@@ -1,7 +1,6 @@
 package org.ajwerner.voronoi.model;
 
 import org.ajwerner.voronoi.Voronoi;
-import org.ajwerner.voronoi.ui.VoronoiRenderer;
 
 /**
  * Created by ajwerner on 12/28/13.
@@ -39,14 +38,8 @@ public class Arc extends ArcKey {
         return new Point(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
-    public void draw() {
-        Point l = getLeft();
-        Point r = getRight();
-
-        Parabola par = new Parabola(site, v.getSweepLoc());
-        double min = (l.x == Double.NEGATIVE_INFINITY) ? VoronoiRenderer.MIN_DRAW_DIM : l.x;
-        double max = (r.x == Double.POSITIVE_INFINITY) ? VoronoiRenderer.MAX_DRAW_DIM : r.x;
-        par.draw(min, max);
+    public double getSweepLoc()  {
+        return v.getSweepLoc();
     }
 
     public String toString() {

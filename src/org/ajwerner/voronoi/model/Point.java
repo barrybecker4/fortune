@@ -1,9 +1,5 @@
 package org.ajwerner.voronoi.model;
 
-import edu.princeton.cs.introcs.StdDraw;
-
-import java.awt.*;
-
 /**
  * Created by ajwerner on 12/23/13.
  */
@@ -59,23 +55,12 @@ public class Point implements Comparable<Point> {
     }
 
     public double distanceTo(Point that) {
-        return Math.sqrt((this.x - that.x)*(this.x - that.x) + (this.y - that.y)*(this.y - that.y));
+        double xDiff = this.x - that.x;
+        double yDiff = this.y - that.y;
+        return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     }
 
-    public void draw() {
-        StdDraw.setPenRadius(.01);
-        StdDraw.point(x, y);
-        StdDraw.setPenRadius();
-    }
-
-    public void draw(Color c) {
-        Color old = StdDraw.getPenColor();
-        StdDraw.setPenColor(c);
-        this.draw();
-        StdDraw.setPenColor(old);
-    }
-
-    private static double EPSILON = 0.0000001;
+    private static final double EPSILON = 0.0000001;
 
     private static boolean equals(double a, double b) {
         if (a == b)

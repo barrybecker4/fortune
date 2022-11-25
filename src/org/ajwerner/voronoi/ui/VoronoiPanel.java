@@ -13,7 +13,7 @@ public class VoronoiPanel extends JPanel {
 
     public VoronoiPanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        renderer = new VoronoiRenderer(WIDTH, HEIGHT, this.getGraphics());
+        renderer = new VoronoiRenderer(WIDTH, HEIGHT, false);
     }
 
     @Override
