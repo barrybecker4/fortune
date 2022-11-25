@@ -33,34 +33,27 @@ public class Voronoi {
     private final TreeMap<ArcKey, CircleEvent> arcs;
     private final TreeSet<Event> events;
 
-
-    public double getSweepLoc() {
-        return sweepLoc;
+    public Voronoi(List<Point> points) {
+        this(points, null);
     }
-
 
     public Voronoi(List<Point> points, VoronoiRenderer renderer) {
-        this(points, renderer, false);
-    }
-
-    public Voronoi(List<Point> points, VoronoiRenderer renderer, boolean animate) {
         // initialize data structures;
         edgeList = new ArrayList<>(points.size());
         events = new TreeSet<>();
         breakPoints = new HashSet<>();
         arcs = new TreeMap<>();
 
-        for (Point site : points) {
-            if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
-                throw new RuntimeException(String.format(
-                        "Invalid site in input, sites must be between %f and %f", MIN_DIM, MAX_DIM ));
-            events.add(new Event(site));
-        }
+        addEventsForPoints(points);
+
         sweepLoc = MAX_DIM;
         do {
+            if (renderer != null) {
+                renderer.draw(points, edgeList, breakPoints, arcs, sweepLoc);
+            }
+
             Event cur = events.pollFirst();
             sweepLoc = cur.p.y;
-            if (animate) renderer.draw(points, edgeList, breakPoints, arcs, sweepLoc);
             if (cur.getClass() == Event.class) {
                 handleSiteEvent(cur);
             }
@@ -74,9 +67,24 @@ public class Voronoi {
         for (BreakPoint bp : breakPoints) {
             bp.finish();
         }
-        renderer.show(points, edgeList);
     }
 
+    public List<VoronoiEdge> getEdgeList() {
+        return edgeList;
+    }
+
+    public double getSweepLoc() {
+        return sweepLoc;
+    }
+
+    private void addEventsForPoints(List<Point> points) {
+        for (Point site : points) {
+            if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
+                throw new RuntimeException(String.format(
+                        "Invalid site in input, sites must be between %f and %f", MIN_DIM, MAX_DIM ));
+            events.add(new Event(site));
+        }
+    }
 
     private void handleSiteEvent(Event cur) {
         // Deal with first point case

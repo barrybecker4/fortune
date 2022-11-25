@@ -3,6 +3,7 @@ package org.ajwerner.voronoi.ui;
 import org.ajwerner.voronoi.algorithm.PointGenerator;
 import org.ajwerner.voronoi.algorithm.Voronoi;
 import org.ajwerner.voronoi.model.Point;
+import org.ajwerner.voronoi.model.VoronoiEdge;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -28,7 +29,9 @@ public class VoronoiPanel extends JPanel {
     }
 
     public void start() {
-        new Voronoi(points, renderer,false);
+        Voronoi v = new Voronoi(points, renderer);
+        List<VoronoiEdge> edgeList = v.getEdgeList();
+        renderer.show(points, edgeList);
     }
 
     @Override
