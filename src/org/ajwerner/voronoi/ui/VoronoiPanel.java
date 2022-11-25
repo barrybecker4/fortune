@@ -16,18 +16,19 @@ public class VoronoiPanel extends JPanel {
 
     public static final int MARGIN = 50;
 
-    public static final int NUM_POINTS = 200;
+    private final List<Point> points;
+
 
     private final VoronoiRenderer renderer;
 
-    public VoronoiPanel() {
+    public VoronoiPanel(int numPoints) {
         setPreferredSize(new Dimension(WIDTH + 2 * MARGIN, HEIGHT + 2 * MARGIN));
         renderer = new VoronoiRenderer(VoronoiPanel.WIDTH, VoronoiPanel.HEIGHT, this);
+        points = new PointGenerator().generatePoints(numPoints);
     }
 
     public void start() {
-        List<Point> points = new PointGenerator().generatePoints(NUM_POINTS);
-        new Voronoi(points, renderer,true);
+        new Voronoi(points, renderer,false);
     }
 
     @Override

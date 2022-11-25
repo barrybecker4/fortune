@@ -28,12 +28,10 @@ import static org.ajwerner.voronoi.ui.VoronoiRenderer.MIN_DIM;
 public class Voronoi {
 
     private double sweepLoc;
-    private final List<Point> points;
     private final List<VoronoiEdge> edgeList;
     private final Set<BreakPoint> breakPoints;
     private final TreeMap<ArcKey, CircleEvent> arcs;
     private final TreeSet<Event> events;
-    private final VoronoiRenderer renderer;
 
 
     public double getSweepLoc() {
@@ -47,12 +45,10 @@ public class Voronoi {
 
     public Voronoi(List<Point> points, VoronoiRenderer renderer, boolean animate) {
         // initialize data structures;
-        this.points = points;
         edgeList = new ArrayList<>(points.size());
         events = new TreeSet<>();
         breakPoints = new HashSet<>();
         arcs = new TreeMap<>();
-        this.renderer = renderer;
 
         for (Point site : points) {
             if ((site.x > MAX_DIM || site.x < MIN_DIM) || (site.y > MAX_DIM || site.y < MIN_DIM))
@@ -78,11 +74,9 @@ public class Voronoi {
         for (BreakPoint bp : breakPoints) {
             bp.finish();
         }
-    }
-
-    public void show() {
         renderer.show(points, edgeList);
     }
+
 
     private void handleSiteEvent(Event cur) {
         // Deal with first point case

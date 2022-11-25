@@ -1,7 +1,6 @@
 package org.ajwerner.voronoi.ui;
 
 import com.barrybecker4.ui.renderers.OfflineGraphics;
-import edu.princeton.cs.introcs.StdDraw;
 import org.ajwerner.voronoi.model.Arc;
 import org.ajwerner.voronoi.model.ArcKey;
 import org.ajwerner.voronoi.model.BreakPoint;
@@ -28,6 +27,8 @@ public class VoronoiRenderer {
     public static final double MAX_DIM = 10;
     public static final double MIN_DIM = -10;
 
+    public static final double RADIUS = 0.01;
+
 
     private final int width;
     private final int height;
@@ -36,26 +37,18 @@ public class VoronoiRenderer {
     private final JPanel panel;
 
 
-    public VoronoiRenderer(int width, int height) {
-        this(width, height, null);
-    }
-
     public VoronoiRenderer(int width, int height, JPanel panel) {
         this.width = width;
         this.height = height;
         this.panel = panel;
-        if (panel != null) {
-            offlineGraphics = new OfflineGraphics(new Dimension(width + 2 * MARGIN, height + 2 * MARGIN), Color.WHITE);
-        } else {
-            StdDraw.setCanvasSize(width, height);
-        }
+        offlineGraphics = new OfflineGraphics(new Dimension(width + 2 * MARGIN, height + 2 * MARGIN), Color.WHITE);
     }
 
     public void show(List<Point> sites, List<VoronoiEdge> edgeList) {
-        clear();
+        //clear();
         setColor(Color.RED);
         for (Point p : sites) {
-            fillCircle(p, 0.01);
+            fillCircle(p, RADIUS);
         }
         setColor(Color.BLACK);
         for (VoronoiEdge e : edgeList) {
@@ -68,7 +61,6 @@ public class VoronoiRenderer {
     }
 
     public BufferedImage getImage() {
-        assert (offlineGraphics != null);
         return offlineGraphics.getOfflineImage().get();
     }
 
@@ -77,7 +69,7 @@ public class VoronoiRenderer {
         clear();
         setColor(Color.RED);
         for (Point p : sites) {
-            fillCircle(p, 0.01);
+            fillCircle(p, RADIUS);
         }
         for (BreakPoint bp : breakPoints) {
             drawBreakPoint(bp);
@@ -97,72 +89,43 @@ public class VoronoiRenderer {
     }
 
     public void clear() {
-        if (offlineGraphics != null) {
-            offlineGraphics.clear();
-        } else {
-            StdDraw.clear();
-        }
+        offlineGraphics.clear();
     }
 
     public void show() {
-        if (offlineGraphics != null) {
-            panel.repaint();
-        } else {
-            StdDraw.show();
-        }
+        panel.repaint();
     }
     public void show(int value) {
-        if (offlineGraphics != null) {
-            panel.repaint();
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            StdDraw.show(value);
+        panel.repaint();
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
     private void fillCircle(Point p, double radius, Color color) {
-        if (offlineGraphics != null) {
-            offlineGraphics.setColor(color);
-            fillCircle(p, radius);
-        } else {
-            Color old = StdDraw.getPenColor();
-            StdDraw.setPenColor(color);
-            fillCircle(p, radius);
-            StdDraw.setPenColor(old);
-        }
+        offlineGraphics.setColor(color);
+        fillCircle(p, radius);
     }
 
     private void fillCircle(Point p, double radius) {
-        if (offlineGraphics != null) {
-            int x = MARGIN + (int) (width * p.x);
-            int y = MARGIN + (int) (height * p.y);
-            int rad = (int) (0.5 * width * radius);
-            offlineGraphics.fillCircle(x, y, rad);
-        } else {
-            StdDraw.setPenRadius(radius);
-            StdDraw.point(p.x, p.y);
-            StdDraw.setPenRadius();
-        }
+        int x = MARGIN + (int) (width * p.x);
+        int y = MARGIN + (int) (height * p.y);
+        int rad = (int) (0.5 * width * radius);
+        offlineGraphics.fillCircle(x, y, rad);
     }
 
     private void drawPoint(double x, double y) {
-        if (offlineGraphics != null) {
-            int xx = MARGIN + (int) (width * x);
-            int yy = MARGIN + (int) (height * y);
-            offlineGraphics.drawPoint(xx, yy);
-        } else {
-            StdDraw.point(x, y);
-        }
+        int xx = MARGIN + (int) (width * x);
+        int yy = MARGIN + (int) (height * y);
+        offlineGraphics.drawPoint(xx, yy);
     }
 
     private void drawBreakPoint(BreakPoint bp) {
         Point p = bp.getPoint();
         setColor(Color.BLUE);
-        fillCircle(p,0.01);
+        fillCircle(p,RADIUS);
         drawLine(bp.edgeBegin.x, bp.edgeBegin.y, p.x, p.y);
         setColor(Color.BLACK);
         if (bp.isEdgeLeft && bp.getEdge().p2 != null) {
@@ -193,24 +156,14 @@ public class VoronoiRenderer {
     }
 
     private void setColor(Color color) {
-        if (offlineGraphics != null) {
-            offlineGraphics.setColor(color);
-        }
-        else {
-            StdDraw.setPenColor(color);
-        }
+        offlineGraphics.setColor(color);
     }
 
     private void drawLine(double x1, double y1, double x2, double y2) {
-        if (offlineGraphics != null) {
-            int xx1 = MARGIN + (int) (width * x1);
-            int yy1 = MARGIN + (int) (height * y1);
-            int xx2 = MARGIN + (int) (width * x2);
-            int yy2 = MARGIN + (int) (height * y2);
-            offlineGraphics.drawLine(xx1, yy1, xx2, yy2);
-        }
-        else {
-            StdDraw.line(x1, y1, x2, y2);
-        }
+        int xx1 = MARGIN + (int) (width * x1);
+        int yy1 = MARGIN + (int) (height * y1);
+        int xx2 = MARGIN + (int) (width * x2);
+        int yy2 = MARGIN + (int) (height * y2);
+        offlineGraphics.drawLine(xx1, yy1, xx2, yy2);
     }
 }
