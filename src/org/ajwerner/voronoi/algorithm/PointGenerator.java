@@ -10,7 +10,7 @@ public class PointGenerator {
 
     public List<Point> generatePoints(int N) {
         List<Point> points = new ArrayList<>();
-        Random rnd = new Random();
+        Random rnd = new Random(0);
         for (int i = 0; i < N; i++) {
             points.add(new Point(rnd.nextDouble(), rnd.nextDouble()));
         }

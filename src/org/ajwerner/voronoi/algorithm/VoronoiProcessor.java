@@ -47,7 +47,7 @@ public class VoronoiProcessor {
         addEventsForPoints(points);
 
         sweepLoc = MAX_DIM;
-        do {
+        while (events.size() > 0) {
             if (renderer != null) {
                 renderer.draw(points, edgeList, breakPoints, arcs, sweepLoc);
             }
@@ -55,7 +55,7 @@ public class VoronoiProcessor {
             SiteEvent cur = events.pollFirst();
             sweepLoc = cur.p.y;
             cur.handleEvent(this);
-        } while ((events.size() > 0));
+        }
 
         this.sweepLoc = MIN_DIM; // hack to draw negative infinite points
         for (BreakPoint bp : breakPoints) {
@@ -172,10 +172,8 @@ public class VoronoiProcessor {
         edgeList.add(e);
 
         // Here we're trying to figure out if the org.ajwerner.voronoi.algorithm.VoronoiProcessor vertex
-        // we've found is the left
-        // or right point of the new edge.
-        // If the edges being traces out by these two arcs take a right turn then we
-        // know
+        // we've found is the leftor right point of the new edge.
+        // If the edges being traces out by these two arcs take a right turn then we know
         // that the vertex is going to be above the current point
         boolean turnsLeft = Point.ccw(arcLeft.right.edgeBegin, point, arcRight.left.edgeBegin) == 1;
         // So if it turns left, we know the next vertex will be below this vertex
